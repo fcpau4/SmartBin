@@ -10,7 +10,6 @@ public class Meteo {
     public Bmx280 sensor;
 
     public float degrees;
-    public float humidity;
     public float pressure;
 
     public Meteo() {
