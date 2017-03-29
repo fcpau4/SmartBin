@@ -8,6 +8,8 @@ import com.google.android.things.contrib.driver.apa102.Apa102;
 import com.google.android.things.contrib.driver.bmx280.Bmx280;
 import com.google.android.things.contrib.driver.rainbowhat.RainbowHat;
 import com.google.android.things.pio.Gpio;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
 
 import java.io.IOException;
 
@@ -18,22 +20,29 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        Bin bin = new Bin("Paperera Dr.Trueta", "41.401831726, 2.20166586", 20.0f);
+        Bin bin = new Bin("PapereraDrTrueta", "41.401831726, 2.20166586", 20.0f);
 
         try {
-            bin.meteo.sensortemperature = RainbowHat.openSensor();
-            bin.meteo.sensortemperature.setTemperatureOversampling(Bmx280.OVERSAMPLING_1X);
-            bin.meteo.sensorpressure = RainbowHat.openSensor();
-            bin.meteo.sensorpressure.setPressureOversampling(Bmx280.OVERSAMPLING_1X);
+            bin.meteo.sensor = RainbowHat.openSensor();
+            bin.meteo.sensor.setTemperatureOversampling(Bmx280.OVERSAMPLING_1X);
+            bin.meteo.sensor.setPressureOversampling(Bmx280.OVERSAMPLING_1X);
+            bin.meteo.degrees = bin.meteo.sensor.readTemperature();
+            bin.meteo.pressure = bin.meteo.sensor.readPressure();
+            bin.meteo.sensor.close();
 
-            Bmx280 sensortemperature = RainbowHat.openSensor();
-            sensortemperature.setTemperatureOversampling(Bmx280.OVERSAMPLING_1X);
-
+            //bin.meteo.sensor = RainbowHat.openSensor();
+            //bin.meteo.sensor.setPressureOversampling(Bmx280.OVERSAMPLING_1X);
+            //bin.meteo.pressure = bin.meteo.sensor.readPressure();
         }catch(IOException e){
-
+            e.printStackTrace();
         }
 
-        /*try {
+        FirebaseDatabase database = FirebaseDatabase.getInstance();
+        DatabaseReference myRef = database.getReference("bins");
+        myRef.child(bin.get_name()).setValue(bin);
+
+        /*
+        try {
             // Light up the Red LED.
             Leds(RainbowHat.LED_RED, false);
             //Leds(RainbowHat.LED_GREEN, true);
@@ -54,7 +63,8 @@ public class MainActivity extends AppCompatActivity {
 
         }catch(IOException e){
 
-        }*/
+        }
+        */
     }
 
     private void Leds(String color, Boolean flag) throws IOException {

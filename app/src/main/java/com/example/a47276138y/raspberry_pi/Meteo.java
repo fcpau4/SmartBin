@@ -7,8 +7,7 @@ import com.google.android.things.contrib.driver.bmx280.Bmx280;
  */
 
 public class Meteo {
-    public Bmx280 sensortemperature;
-    public Bmx280 sensorpressure;
+    public Bmx280 sensor;
 
     public float degrees;
     public float humidity;
