@@ -4,6 +4,7 @@ import android.graphics.Color;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 
+import com.example.a47276138y.raspberry_pi.server.HttpServerThread;
 import com.google.android.things.contrib.driver.apa102.Apa102;
 import com.google.android.things.contrib.driver.bmx280.Bmx280;
 import com.google.android.things.contrib.driver.rainbowhat.RainbowHat;
@@ -12,39 +13,40 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 
 import java.io.IOException;
+import java.net.ServerSocket;
 
 
 public class MainActivity extends AppCompatActivity {
 
+    public Bin bin;
+    public ManagerDB managerDB;
+    private final String BIN_NAME = "PapereraDrTrueta";
+    ServerSocket httpServerSocket;
+    
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        Bin bin = new Bin("PapereraDrTrueta", "41.401831726, 2.20166586", 20.0f);
+        FirebaseDatabase database = FirebaseDatabase.getInstance();
+        DatabaseReference myRef = database.getReference("bins");
+        DatabaseReference child = myRef.child(BIN_NAME);
 
         try {
-            bin.meteo.sensor = RainbowHat.openSensor();
-            bin.meteo.sensor.setTemperatureOversampling(Bmx280.OVERSAMPLING_1X);
-            bin.meteo.sensor.setPressureOversampling(Bmx280.OVERSAMPLING_1X);
-            bin.meteo.degrees = bin.meteo.sensor.readTemperature();
-            bin.meteo.pressure = bin.meteo.sensor.readPressure();
-            bin.meteo.sensor.close();
+            bin = new Bin(BIN_NAME, "41.401831726, 2.20166586", 20.0f, RainbowHat.openSensor());
+            managerDB = new ManagerDB(bin, child);
+            managerDB.updateBin();
 
-            //bin.meteo.sensor = RainbowHat.openSensor();
-            //bin.meteo.sensor.setPressureOversampling(Bmx280.OVERSAMPLING_1X);
-            //bin.meteo.pressure = bin.meteo.sensor.readPressure();
+            bin.getSensors();
+            managerDB.pushMeteo();
+
         }catch(IOException e){
             e.printStackTrace();
         }
+        
 
-        FirebaseDatabase database = FirebaseDatabase.getInstance();
-        DatabaseReference myRef = database.getReference("bins");
-        myRef.child(bin.get_name()).setValue(bin);
-
-        /*
         try {
             // Light up the Red LED.
-            Leds(RainbowHat.LED_RED, false);
+            //Leds(RainbowHat.LED_RED, false);
             //Leds(RainbowHat.LED_GREEN, true);
             //Leds(RainbowHat.LED_BLUE, true);
 
@@ -64,7 +66,10 @@ public class MainActivity extends AppCompatActivity {
         }catch(IOException e){
 
         }
-        */
+
+        HttpServerThread httpServerThread = new HttpServerThread(httpServerSocket, this);
+        httpServerThread.start();
+
     }
 
     private void Leds(String color, Boolean flag) throws IOException {
@@ -73,4 +78,20 @@ public class MainActivity extends AppCompatActivity {
         //led.close();
     }
 
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+
+        if (httpServerSocket != null) {
+            try {
+                httpServerSocket.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    public Bin getBin() {
+        return bin;
+    }
 }

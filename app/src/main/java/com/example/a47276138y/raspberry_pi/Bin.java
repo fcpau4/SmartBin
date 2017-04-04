@@ -1,5 +1,11 @@
 package com.example.a47276138y.raspberry_pi;
 
+import com.google.android.things.contrib.driver.bmx280.Bmx280;
+import com.google.firebase.database.Exclude;
+
+import java.io.IOException;
+import java.util.Date;
+
 /**
  * Created by 47276138y on 28/03/17.
  */
@@ -10,12 +16,24 @@ public class Bin {
     public String location;
     public float totalWeight;
     public float currWeight;
-    public Meteo meteo = new Meteo();
+    public long updated_at;
 
-    public Bin(String _name, String location, float totalWeight) {
+    @Exclude
+    public Meteo meteo;
+
+    public Bin(String _name, String location, float totalWeight, Bmx280 sensor) {
         this._name = _name;
         this.location = location;
         this.totalWeight = totalWeight;
+
+        this.meteo = new Meteo(sensor);
+        this.meteo.sensor = sensor;
+    }
+
+
+
+    public void getSensors(){
+        this.meteo.getSensors();
     }
 
     public String get_name() {
