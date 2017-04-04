@@ -29,7 +29,7 @@ import java.net.Socket;
     @Override
         public void run() {
             Socket socket = null;
-
+        System.out.println("HttpServer on port "+HttpServerPORT);
             try {
                 httpServerSocket = new ServerSocket(HttpServerPORT);
 

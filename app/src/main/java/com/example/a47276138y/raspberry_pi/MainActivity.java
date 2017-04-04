@@ -52,27 +52,30 @@ public class MainActivity extends AppCompatActivity {
 
 
             // Light up the rainbow
+
             Apa102 ledstrip = RainbowHat.openLedStrip();
-            ledstrip.setBrightness(31);
+            ledstrip.setBrightness(0);
             int[] rainbow = new int[RainbowHat.LEDSTRIP_LENGTH];
             for (int i = 0; i < rainbow.length; i++) {
                 rainbow[i] = Color.HSVToColor(255, new float[]{i * 360.f / rainbow.length, 1.0f, 1.0f});
             }
             ledstrip.write(rainbow);
             // Close the device when done.
-            //ledstrip.close();
+            ledstrip.close();
+
 
 
         }catch(IOException e){
-
+            e.printStackTrace();
         }
+
 
         HttpServerThread httpServerThread = new HttpServerThread(httpServerSocket, this);
         httpServerThread.start();
 
     }
 
-    private void Leds(String color, Boolean flag) throws IOException {
+    public void Leds(String color, Boolean flag) throws IOException {
         Gpio led = RainbowHat.openLed(color);
         led.setValue(flag);
         //led.close();
